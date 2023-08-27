@@ -1,0 +1,10 @@
+cradle:
+  cabal:
+    - path: "./numis"
+      component: "lib:numis"
+    - path: "./cli"
+      component: "lib:cli"
+    - path: "./test"
+      component: "test:numis-tests"
+    - path: "./app"
+      component: "exe:numis"

@@ -1,0 +1,97 @@
+cabal-version: 3.4
+name:          numis
+version:       0.0.0.0
+
+-- synopsis:       $synopsis
+-- description:    $description
+-- category:       $category
+-- homepage:       $gitrepo#readme
+-- bug-reports:    $gitrepo/issues
+-- maintainer:     $maintainer
+build-type:    Simple
+
+-- source-repository head
+--   type: git
+--   location: $gitrepo
+
+common common-opts
+  default-extensions:
+    BlockArguments
+    DeriveFunctor
+    LambdaCase
+    NamedFieldPuns
+    NumericUnderscores
+    OverloadedStrings
+    RecordWildCards
+    LambdaCase
+
+  build-depends:
+    , base
+    , bytestring
+    , containers
+    , megaparsec
+    , string-interpolate
+    , text
+
+  default-language:   Haskell2010
+
+library
+  import:          common-opts
+
+  -- cabal-fmt: expand src
+  exposed-modules:
+    Extras.Maybe
+    Numis.Extras
+    Numis.Language
+    Numis.Language.Expr
+    Numis.Language.Parser
+    Numis.Language.Printer
+    Numis.Obligation
+    Numis.Relation
+
+  hs-source-dirs:  numis
+
+library cli
+  import:         common-opts
+
+  -- cabal-fmt: expand src
+  exposed-modules:
+    Cli.Main
+
+  hs-source-dirs: cli
+  build-depends:  
+    , numis
+    , optparse-applicative 
+    , ansi-terminal
+    , brick
+    , pandoc
+    , pandoc-types
+
+executable numis
+  import:         common-opts
+  main-is:        Main.hs
+  hs-source-dirs: app
+  build-depends:  numis
+
+test-suite numis-tests
+  import:         common-opts
+  type:           exitcode-stdio-1.0
+  hs-source-dirs: test
+  ghc-options:
+    -Wall -threaded -rtsopts -with-rtsopts=-N -fdefer-typed-holes -O0
+
+  main-is:        Main.hs
+
+  -- cabal-fmt: expand test -Main
+  other-modules:
+    Language.ParserSpec
+    Spec
+
+  build-depends:
+    , hedgehog
+    , hspec
+    , hspec-core
+    , hspec-discover
+    , hspec-expectations
+    , hspec-hedgehog
+    , numis
