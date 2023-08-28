@@ -10,9 +10,8 @@ import Control.Monad (void)
 import Data.Foldable
 import qualified Data.Text as T
 import Numeric.Natural
-import Numis.Relation
+import Numis.Payment
 import Data.Functor
-import Numis.Obligation
 import Numis.Language.Expr
 
 -- General parsers
@@ -62,8 +61,8 @@ scalar = do
   op <- try has <|> owes
   op <$> amount
 
-settlement :: Parsec Void Text (Settlement Natural)
-settlement = do
+settlementP :: Parsec Void Text (Settlement Natural)
+settlementP = do
   op <- asum [assigns, try issues, try novates, try setsOff]
   op <$> amount
 
@@ -73,7 +72,7 @@ fact = liftA2 (,) identifier scalar
 payment :: Parsec Void Text Payment'
 payment = do
   payer <- identifier
-  relation <- settlement
+  settlement <- settlementP
   to
   payee <- identifier
   pure $ Payment{ ..}

@@ -1,6 +1,6 @@
 module Main where
 
-import Prelude
+import qualified Cli.Main as CLI
 
 main :: IO ()
-main = putStrLn "Hello world"
+main = CLI.main

@@ -19,11 +19,11 @@ common common-opts
     BlockArguments
     DeriveFunctor
     LambdaCase
+    LambdaCase
     NamedFieldPuns
     NumericUnderscores
     OverloadedStrings
     RecordWildCards
-    LambdaCase
 
   build-depends:
     , base
@@ -32,38 +32,45 @@ common common-opts
     , megaparsec
     , string-interpolate
     , text
+    , vector
 
   default-language:   Haskell2010
 
 library
   import:          common-opts
 
-  -- cabal-fmt: expand src
+  -- cabal-fmt: expand numis
   exposed-modules:
     Extras.Maybe
-    Numis.Extras
-    Numis.Language
+    Extras.Tuple
     Numis.Language.Expr
     Numis.Language.Parser
     Numis.Language.Printer
-    Numis.Obligation
-    Numis.Relation
+    Numis.Payment
+    Numis.Transform.Denormalize
+    Numis.Transform.Entities
+    Numis.Transform.Table
 
   hs-source-dirs:  numis
 
 library cli
-  import:         common-opts
+  import:          common-opts
 
-  -- cabal-fmt: expand src
+  -- cabal-fmt: expand cli
   exposed-modules:
+    Cli.Ansi
+    Cli.Command
+    Cli.Command.Parser
+    Cli.Command.Print
+    Cli.Command.Type
     Cli.Main
 
-  hs-source-dirs: cli
-  build-depends:  
-    , numis
-    , optparse-applicative 
+  hs-source-dirs:  cli
+  build-depends:
     , ansi-terminal
     , brick
+    , numis
+    , optparse-applicative
     , pandoc
     , pandoc-types
 
@@ -71,7 +78,7 @@ executable numis
   import:         common-opts
   main-is:        Main.hs
   hs-source-dirs: app
-  build-depends:  numis
+  build-depends:  numis:cli
 
 test-suite numis-tests
   import:         common-opts

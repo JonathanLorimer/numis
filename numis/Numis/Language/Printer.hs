@@ -2,10 +2,9 @@
 module Numis.Language.Printer where
 
 import Data.Text (Text)
-import Numis.Obligation 
+import Numis.Payment 
 import Data.String.Interpolate (i)
 import Numis.Language.Expr
-import Numis.Relation (Payment(..))
 import Data.Foldable
 import Data.List (intersperse)
 
@@ -23,7 +22,7 @@ printFact :: Fact -> Text
 printFact (ident, scal) = [i|#{ident} #{printScalar scal}|]
 
 printPayment :: Payment' -> Text
-printPayment Payment{ ..} = [i|#{payer} #{printSettlement relation} to #{payee}|]
+printPayment Payment{ ..} = [i|#{payer} #{printSettlement settlement} to #{payee}|]
 
 printLedger :: Ledger -> Text
 printLedger = fold . intersperse "\n" . fmap (either printFact printPayment)

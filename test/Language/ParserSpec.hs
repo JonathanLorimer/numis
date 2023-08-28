@@ -8,8 +8,7 @@ import qualified Hedgehog.Range as Range
 import Numis.Language.Parser
 import Text.Megaparsec (runParser)
 import Numis.Language.Printer
-import Numis.Obligation
-import Numis.Relation (Payment(..))
+import Numis.Payment
 import qualified Data.Text as T
 import Numis.Language.Expr
 
@@ -60,7 +59,7 @@ genPayment = do
   payee <- Gen.text (Range.linear 1 100) Gen.alphaNum
   stlmnt <- genSettlement
   amnt <- Gen.integral $ Range.linear 0 1_000_000
-  let relation = stlmnt amnt
+  let settlement = stlmnt amnt
   pure Payment{ ..}
 
 genLedger :: Gen Ledger

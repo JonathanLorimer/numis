@@ -1,0 +1,19 @@
+Deliverer has 100
+Payer has 100
+
+-- The initial obligation
+Payer issues 100 to Taker 
+
+-- The bill of exchange transaction
+Taker assigns 100 to Deliverer
+Deliverer assigns 100 to Taker
+
+-- The bill of exchange transfer from Deliverer to Payee
+Deliverer assigns 100 to Payee
+Payee issues 100 to Deliverer
+
+-- The Payee gives bill of exchange to Payer
+Payee novates 100 to Payer
+Payer assigns 100 to Payee
+
+
