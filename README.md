@@ -4,9 +4,9 @@ This project aims to create a domain specific language for describing balance sh
 
 It is heavily inspired by:
 
-    - [Borja Clavero's paper on the 4 primitive balance sheet operations](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4032398)
-    - [Various posts by Daniel H. Neilson on his "Soon Parted" substack](https://www.soonparted.co/)
-    - [Discussions about the nature of money at the mimbres school](https://www.patreon.com/MimbresSchool)
+- [Borja Clavero's paper on the 4 primitive balance sheet operations](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4032398)
+- [Various posts by Daniel H. Neilson on his "Soon Parted" substack](https://www.soonparted.co/)
+- [Discussions about the nature of money at the mimbres school](https://www.patreon.com/MimbresSchool)
 
 
 ## Language Grammar
@@ -19,9 +19,9 @@ An assertion allows you to make a claim about the initial conditions for the bal
 
 The grammar goes `<Name> <Operator> <Amount>`
 
-    - `Name`: a single word that will be used to identify this agent, they will be given a balance sheet with assets and liabilities
-    - `Operator`: Either `has` or `owes`
-    - `Amount`: A number
+- `Name`: a single word that will be used to identify this agent, they will be given a balance sheet with assets and liabilities
+- `Operator`: Either `has` or `owes`
+- `Amount`: A number
 
 #### Has
 
@@ -57,10 +57,10 @@ A balance sheet operation allows you to create a relationship between two agents
 
 The grammar goes `<Payer> <Operator> <Amount> to <Payee> [as "<Description>"]`
 
-    - `Payer` & `Payee`: a single word that will be used to identify this agent, they will be given a balance sheet with assets and liabilities
-    - `Operator`: Either `assigns`, `issues`, `sets-off`, `novates`
-    - `Amount`: A number
-    - `Description`: A textual description of the line item, the `[]` in the grammar indicate that this is optional
+- `Payer` & `Payee`: a single word that will be used to identify this agent, they will be given a balance sheet with assets and liabilities
+- `Operator`: Either `assigns`, `issues`, `sets-off`, `novates`
+- `Amount`: A number
+- `Description`: A textual description of the line item, the `[]` in the grammar indicate that this is optional
 
 #### Assignment
 
