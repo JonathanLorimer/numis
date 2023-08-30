@@ -42,7 +42,7 @@ yields
 The `owes` operator lets you assign a liability
 
 ```
-A has 100
+A owes 100
 ```
 
 yields 
