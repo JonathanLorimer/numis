@@ -1,0 +1,16 @@
+-- The initial obligation
+Taker assigns 100 to Payer as "export of goods"
+Payer issues 100 to Taker as "taker opens foreign account"
+
+-- The bill of exchange transaction
+Deliverer assigns 100 to Taker as "payment in currency"
+Taker assigns 100 to Deliverer as "bill of exchange"
+
+-- The bill of exchange transfer from Deliverer to Payee
+Deliverer assigns 100 to Payee as "bill of exchange"
+Payee issues 100 to Deliverer as "deliverer opens foreign account"
+
+-- The Payee gives bill of exchange to Payer
+Payer assigns 100 to Payee as "payment in currency"
+Payee sets-off 100 to Payer as "extinguish bill of exchange"
+

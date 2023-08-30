@@ -33,7 +33,7 @@ liability :: a -> b -> Payment a (Scalar b)
 liability a = Payment a a . Liability
 
 data Settlement a = Assignment a | Issuance a | SetOff a | Novation a
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Ord, Show, Functor)
 
 assignment :: a -> a -> b -> Payment a (Settlement b)
 assignment a a' = Payment a a' . Assignment

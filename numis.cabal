@@ -24,6 +24,7 @@ common common-opts
     NumericUnderscores
     OverloadedStrings
     RecordWildCards
+    TypeApplications
 
   build-depends:
     , base

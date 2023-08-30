@@ -11,6 +11,9 @@ import Numis.Language.Printer
 import Numis.Payment
 import qualified Data.Text as T
 import Numis.Language.Expr
+import Data.Foldable
+import Data.List (intersperse)
+import Numeric.Natural
 
 spec :: Spec
 spec =
@@ -57,9 +60,10 @@ genPayment :: Gen Payment'
 genPayment = do
   payer <- Gen.text (Range.linear 1 100) Gen.alphaNum
   payee <- Gen.text (Range.linear 1 100) Gen.alphaNum
-  stlmnt <- genSettlement
-  amnt <- Gen.integral $ Range.linear 0 1_000_000
-  let settlement = stlmnt amnt
+  stlmnt <- genSettlement @Natural
+  statementTitle <- Gen.maybe $ fold . intersperse " " <$> Gen.list (Range.linear 1 10) (Gen.text (Range.linear 1 10) Gen.alphaNum)
+  statementSettlement <- stlmnt <$> (Gen.integral $ Range.linear 0 1_000_000)
+  let settlement = Statement{..}
   pure Payment{ ..}
 
 genLedger :: Gen Ledger

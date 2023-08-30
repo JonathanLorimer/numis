@@ -11,7 +11,7 @@ import Numis.Language.Parser (ledger)
 import Extras.Maybe (handleNothing)
 import Cli.Ansi (setErrorColor)
 import Numis.Transform.Denormalize (Sign(..))
-import Numis.Transform.Table (Table(..))
+import Numis.Transform.Table (Table(..), Cell (..))
 import Text.Pandoc.Builder (Blocks, simpleTable, plain, text, doc)
 import qualified Data.Vector as V
 import Data.Functor
@@ -26,7 +26,7 @@ runPrint :: FilePath -> IO ()
 runPrint fp = withFile fp ReadMode \h -> do
   contents <- hGetContents h
   l <- handleNothing (parseMaybe ledger contents) $ setErrorColor >> die "Failed to parse source"
-  rst <- runIOorExplode . writeRST def . doc . toPandocTable . toTable $ l
+  rst <- runIOorExplode . writeMarkdown (def{writerExtensions = githubMarkdownExtensions}) . doc . toPandocTable . toTable $ l
   hPutStr stdout rst
   
 toPandocTable :: Table -> Blocks
@@ -38,6 +38,7 @@ toPandocTable (Table{..}) = simpleTable h r
     r :: [[Blocks]]
     r = rows <&> \row ->
           V.toList row <&> \case
-            Nothing -> mempty
-            Just (Positive n) -> plain . text $ "+" <> (T.pack $ show n)
-            Just (Negative n) -> plain . text $ "-" <> (T.pack $ show n)
+            Empty -> mempty
+            Item (Positive n) -> plain . text $ "+" <> (T.pack $ show n)
+            Item (Negative n) -> plain . text $ "-" <> (T.pack $ show n)
+            Description desc -> plain . text $ desc

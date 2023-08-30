@@ -22,7 +22,11 @@ printFact :: Fact -> Text
 printFact (ident, scal) = [i|#{ident} #{printScalar scal}|]
 
 printPayment :: Payment' -> Text
-printPayment Payment{ ..} = [i|#{payer} #{printSettlement settlement} to #{payee}|]
+printPayment Payment{ ..} = 
+  let Statement{..} = settlement
+      settlementText = printSettlement statementSettlement
+      titleText = maybe "" (\t -> " as \"" <> t <> "\"") statementTitle
+  in [i|#{payer} #{settlementText} to #{payee}#{titleText}|]
 
 printLedger :: Ledger -> Text
 printLedger = fold . intersperse "\n" . fmap (either printFact printPayment)

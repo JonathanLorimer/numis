@@ -5,7 +5,7 @@ import Text.Megaparsec
 import Data.Void
 import Data.Text (Text)
 import qualified Text.Megaparsec.Char.Lexer as L
-import Text.Megaparsec.Char (space1, digitChar, alphaNumChar)
+import Text.Megaparsec.Char (space1, digitChar, alphaNumChar, spaceChar)
 import Control.Monad (void)
 import Data.Foldable
 import qualified Data.Text as T
@@ -33,8 +33,17 @@ identifier = T.pack <$> lex (some alphaNumChar)
 amount :: Parsec Void Text Natural
 amount = read <$> lex (some digitChar)
 
+text :: Parsec Void Text Text
+text = T.pack <$> lex (some (try alphaNumChar <|> spaceChar))
+
 to :: Parsec Void Text ()
 to = void $ sym "to" 
+
+as :: Parsec Void Text ()
+as = void $ sym "as" 
+
+quote :: Parsec Void Text ()
+quote = void $ sym "\"" 
 
 -- Operator parsers
 has :: Parsec Void Text (a -> Scalar a)
@@ -66,20 +75,30 @@ settlementP = do
   op <- asum [assigns, try issues, try novates, try setsOff]
   op <$> amount
 
+statementP :: Parsec Void Text (Statement Natural)
+statementP = do 
+  statementSettlement <- settlementP
+  statementTitle <- optional $ as >> between quote quote identifier
+  pure $ Statement{..} 
+
 fact :: Parsec Void Text Fact
 fact = liftA2 (,) identifier scalar
 
 payment :: Parsec Void Text Payment'
 payment = do
   payer <- identifier
-  settlement <- settlementP
+  statementSettlement <- settlementP
   to
   payee <- identifier
-  pure $ Payment{ ..}
+  statementTitle <- optional $ as >> between quote quote text
+  let settlement = Statement{..}
+  pure $ Payment{..}
 
 factRel :: Parsec Void Text (Either Fact Payment')
 factRel = Left <$> try fact 
       <|> (Right <$> payment)
 
 ledger :: Parsec Void Text Ledger
-ledger = lex $ many factRel
+ledger = do
+  lex $ many lineComment
+  lex $ many factRel
