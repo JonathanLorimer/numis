@@ -12,6 +12,12 @@ data Statement a =
 
 type Payment' = Payment Text (Statement Natural)
 
-type Fact = (Text, Scalar Natural)
+data Fact a =
+  Fact
+    { factScalar :: Scalar a
+    , factTitle :: Maybe Text
+    } deriving (Eq, Ord, Show, Functor)
 
-type Ledger = [Either Fact Payment']
+type Fact' = (Text, Fact Natural)
+
+type Ledger = [Either Fact' Payment']

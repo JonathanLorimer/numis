@@ -14,6 +14,7 @@ import Numis.Language.Expr
 import Data.Foldable
 import Data.List (intersperse)
 import Numeric.Natural
+import Data.Text (Text)
 
 spec :: Spec
 spec =
@@ -49,19 +50,23 @@ genScalar = Gen.choice [pure Asset, pure Liability]
 genSettlement :: Gen (a -> Settlement a)
 genSettlement = Gen.choice [pure Assignment, pure SetOff, pure Novation, pure Issuance]
 
-genFact :: Gen Fact
+genTitle :: Gen (Maybe Text)
+genTitle = Gen.maybe $ fold . intersperse " " <$> 
+  Gen.list (Range.linear 1 10) (Gen.text (Range.linear 1 10) Gen.alphaNum)
+
+genFact :: Gen Fact'
 genFact = do 
   ident <- Gen.text (Range.linear 1 100) Gen.alphaNum
-  scal <- genScalar
-  amnt <- Gen.integral $ Range.linear 0 1_000_000
-  pure (ident, scal amnt)
+  factScalar <- genScalar <*> Gen.integral (Range.linear 0 1_000_000)
+  factTitle <- genTitle
+  pure (ident, Fact{..})
 
 genPayment :: Gen Payment'
 genPayment = do
   payer <- Gen.text (Range.linear 1 100) Gen.alphaNum
   payee <- Gen.text (Range.linear 1 100) Gen.alphaNum
   stlmnt <- genSettlement @Natural
-  statementTitle <- Gen.maybe $ fold . intersperse " " <$> Gen.list (Range.linear 1 10) (Gen.text (Range.linear 1 10) Gen.alphaNum)
+  statementTitle <- genTitle
   statementSettlement <- stlmnt <$> (Gen.integral $ Range.linear 0 1_000_000)
   let settlement = Statement{..}
   pure Payment{ ..}

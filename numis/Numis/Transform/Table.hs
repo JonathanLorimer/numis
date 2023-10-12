@@ -4,7 +4,7 @@ import Data.Text (Text)
 import Numeric.Natural (Natural)
 import Data.Vector (Vector)
 import qualified Data.Vector as V
-import Numis.Language.Expr (Ledger, Fact, Payment', Statement (..))
+import Numis.Language.Expr (Ledger, Fact (..), Payment', Statement (..), Fact')
 import qualified Data.Set as Set
 import Numis.Transform.Entities (agents)
 import Numis.Payment (Scalar(..), fromScalar, Payment (..))
@@ -40,13 +40,17 @@ toTable ledger = Table{..}
     rows :: [Vector Cell]
     rows = foldr (\ledgerItem rows -> maybe rows (: rows) (mkRow ledgerItem)) [] ledger
 
-    mkRow :: Either Fact Payment' -> Maybe (Vector Cell)
+    mkRow :: Either Fact' Payment' -> Maybe (Vector Cell)
     mkRow = \case
-      (Left (ident, scalar)) ->
-        let amnt = Item . Positive $ fromScalar scalar
-            col = const ident <$> scalar 
+      (Left (ident, Fact{..})) ->
+        let amnt = Item . Positive $ fromScalar factScalar
+            col = const ident <$> factScalar 
             mIdx = V.elemIndex col headers'
-        in mIdx <&> \idx -> V.modify (\v -> write v idx amnt) emptyRow
+            title = maybe Empty Description $ factTitle
+        in mIdx <&> \idx -> 
+            (`V.modify` emptyRow) \v -> do 
+              write v idx amnt 
+              write v lastIndex title 
       (Right p) ->
         let Payment{payer, payee, settlement = settlement'} = denormalize $ fmap statementSettlement p
             title = maybe Empty Description $ statementTitle (settlement p)

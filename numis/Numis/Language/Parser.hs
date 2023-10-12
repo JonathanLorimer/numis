@@ -5,7 +5,7 @@ import Text.Megaparsec
 import Data.Void
 import Data.Text (Text)
 import qualified Text.Megaparsec.Char.Lexer as L
-import Text.Megaparsec.Char (space1, digitChar, alphaNumChar, spaceChar)
+import Text.Megaparsec.Char (space1, digitChar, alphaNumChar, spaceChar, symbolChar)
 import Control.Monad (void)
 import Data.Foldable
 import qualified Data.Text as T
@@ -28,7 +28,7 @@ lineComment :: Parsec Void Text ()
 lineComment = void $ L.skipLineComment "--"
 
 identifier :: Parsec Void Text Text
-identifier = T.pack <$> lex (some alphaNumChar)
+identifier = T.pack <$> lex (some $ try alphaNumChar <|> symbolChar)
 
 amount :: Parsec Void Text Natural
 amount = read <$> lex (some digitChar)
@@ -81,8 +81,17 @@ statementP = do
   statementTitle <- optional $ as >> between quote quote identifier
   pure $ Statement{..} 
 
-fact :: Parsec Void Text Fact
-fact = liftA2 (,) identifier scalar
+factP :: Parsec Void Text (Fact Natural)
+factP = liftA2 Fact scalar title
+
+fact :: Parsec Void Text Fact'
+fact = liftA2 (,) 
+  identifier 
+  factP
+  
+
+title :: Parsec Void Text (Maybe Text)
+title = optional $ as >> between quote quote text
 
 payment :: Parsec Void Text Payment'
 payment = do
@@ -90,11 +99,11 @@ payment = do
   statementSettlement <- settlementP
   to
   payee <- identifier
-  statementTitle <- optional $ as >> between quote quote text
+  statementTitle <- title
   let settlement = Statement{..}
   pure $ Payment{..}
 
-factRel :: Parsec Void Text (Either Fact Payment')
+factRel :: Parsec Void Text (Either Fact' Payment')
 factRel = Left <$> try fact 
       <|> (Right <$> payment)
 
