@@ -20,4 +20,5 @@ parseCommand = subparser $
 
 run :: Command -> IO ()
 run = \case
-  CommandPrint { filePath } -> runPrint filePath
+  CommandPrint { filePath, outputFile, format  } -> runPrint filePath outputFile format
+

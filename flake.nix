@@ -49,6 +49,8 @@
               haskellPackages.ghcid
               haskellPackages.fourmolu
               haskellPackages.cabal-fmt
+              pandoc
+              texlive.combined.scheme-full
             ]
             ++ (builtins.attrValues (import ./scripts.nix {s = pkgs.writeShellScriptBin;}));
         });

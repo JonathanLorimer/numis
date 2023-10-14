@@ -1,14 +1,15 @@
 module Cli.Command.Print where
 
+import Prelude hiding (writeFile)
 import Cli.Ansi (setErrorColor)
-import Cli.Command.Parser (sourceParser)
+import Cli.Command.Parser 
 import Cli.Command.Type
 import Control.Monad.IO.Class
 import Data.Functor
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Text.IO (hGetContents, hPutStr)
+import Data.Text.IO qualified as TIO
 import qualified Data.Vector as V
 import Extras.Maybe (handleNothing)
 import Numis.Language.Parser (ledger)
@@ -53,17 +54,24 @@ import Text.Pandoc.Builder (
 import Text.Pandoc.Readers
 import Text.Pretty.Simple (pPrint)
 import Data.List (transpose, singleton)
-import Text.Pandoc.Writers (writeCommonMark, writeRST, writeNative)
+import Text.Pandoc.Writers (writeCommonMark, writeRST, writeNative, writeHtml5String, writeLaTeX)
 
 parsePrintCommand :: Parser Command
-parsePrintCommand = CommandPrint <$> sourceParser
+parsePrintCommand = CommandPrint <$> sourceParser <*> outputParser <*> formatParser
 
-runPrint' :: FilePath -> IO ()
-runPrint' fp = withFile fp ReadMode \h -> do
-  contents <- hGetContents h
+runPrint :: FilePath -> Maybe FilePath -> OutputFormat -> IO ()
+runPrint fp mo fmt = withFile fp ReadMode \h -> do
+  contents <- TIO.hGetContents h
   l <- handleNothing (parseMaybe ledger contents) $ setErrorColor >> die "Failed to parse source"
-  md <- runIOorExplode . writeMarkdown (def{writerExtensions = Ext_grid_tables `enableExtension` emptyExtensions }) . doc . toPandocTable . toTable $ l
-  hPutStr stdout md
+  let writer = 
+        case fmt of 
+          HTML -> writeHtml5String
+          MD -> writeMarkdown
+          LaTex -> writeLaTeX
+  out <- runIOorExplode . writer (def{writerExtensions = Ext_grid_tables `enableExtension` emptyExtensions }) . doc . toPandocTable . toTable $ l
+  case mo of
+    Nothing -> TIO.hPutStr stdout out
+    Just ofp -> TIO.writeFile ofp out
 
 toPandocTable :: Table -> Blocks
 toPandocTable (Table{..}) = table caption colSpec tableHead tableBody tableFoot
@@ -80,10 +88,15 @@ toPandocTable (Table{..}) = table caption colSpec tableHead tableBody tableFoot
   tableFoot :: TableFoot
   tableFoot = TableFoot nullAttr []
 
+  -- colSpec :: [ColSpec]
+  -- colSpec =
+  --   let numCols = (length headers * 2) + fromMaybe 0 (1 <$ descs)
+  --    in replicate numCols (AlignDefault, ColWidth (1 / realToFrac numCols))
+
   colSpec :: [ColSpec]
   colSpec =
     let numCols = (length headers * 2) + fromMaybe 0 (1 <$ descs)
-     in replicate numCols (AlignDefault, ColWidth (1 / realToFrac numCols))
+     in replicate numCols (AlignDefault, ColWidthDefault)
 
   topHeader :: Row
   topHeader =
