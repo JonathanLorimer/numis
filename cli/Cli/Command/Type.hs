@@ -1,6 +1,6 @@
 module Cli.Command.Type where
 
-data OutputFormat = HTML | MD | LaTex deriving (Show)
+data OutputFormat = HTML | MD | LaTeX deriving (Show)
 
 data Command = CommandPrint
   { filePath :: FilePath

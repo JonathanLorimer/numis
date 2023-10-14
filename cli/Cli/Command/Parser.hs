@@ -17,7 +17,7 @@ outputParser = optional
   <> help "output path for result, if not specified will just print to the command line"
 
 formatParser :: Parser OutputFormat
-formatParser = option (maybeReader (\case; "html" -> Just HTML; "md" -> Just MD; "latex" -> Just LaTex; _ -> Nothing))
+formatParser = option (maybeReader (\case; "html" -> Just HTML; "md" -> Just MD; "latex" -> Just LaTeX; _ -> Nothing))
    $ long "format" 
   <> short 'f'
   <> value MD

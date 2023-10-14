@@ -1,16 +1,16 @@
 module Cli.Command.Print where
 
-import Prelude hiding (writeFile)
 import Cli.Ansi (setErrorColor)
-import Cli.Command.Parser 
+import Cli.Command.Parser
 import Cli.Command.Type
 import Control.Monad.IO.Class
 import Data.Functor
+import Data.List (singleton, transpose)
 import Data.Maybe
 import Data.Text (Text)
-import qualified Data.Text as T
+import Data.Text qualified as T
 import Data.Text.IO qualified as TIO
-import qualified Data.Vector as V
+import Data.Vector qualified as V
 import Extras.Maybe (handleNothing)
 import Numis.Language.Parser (ledger)
 import Numis.Transform.Denormalize (Sign (..))
@@ -26,11 +26,11 @@ import Text.Pandoc (
   ReaderOptions (..),
   WriterOptions (..),
   def,
+  emptyExtensions,
   enableExtension,
   githubMarkdownExtensions,
   runIOorExplode,
-  writeMarkdown, 
-  emptyExtensions,
+  writeMarkdown,
  )
 import Text.Pandoc.Builder (
   Blocks,
@@ -39,22 +39,26 @@ import Text.Pandoc.Builder (
   ColSpan (..),
   ColSpec,
   Row (..),
+  RowHeadColumns (..),
   RowSpan (..),
-  TableBody(..),
+  TableBody (..),
   TableFoot (..),
   TableHead (..),
   doc,
+  emptyCell,
   nullAttr,
   plain,
+  simpleCell,
   simpleTable,
   table,
   text,
-  toList, simpleCell, RowHeadColumns (..), emptyCell,
+  toList,
  )
 import Text.Pandoc.Readers
+import Text.Pandoc.Templates (compileDefaultTemplate, getDefaultTemplate)
+import Text.Pandoc.Writers (writeCommonMark, writeHtml5String, writeLaTeX, writeNative, writeRST)
 import Text.Pretty.Simple (pPrint)
-import Data.List (transpose, singleton)
-import Text.Pandoc.Writers (writeCommonMark, writeRST, writeNative, writeHtml5String, writeLaTeX)
+import Prelude hiding (writeFile)
 
 parsePrintCommand :: Parser Command
 parsePrintCommand = CommandPrint <$> sourceParser <*> outputParser <*> formatParser
@@ -63,12 +67,38 @@ runPrint :: FilePath -> Maybe FilePath -> OutputFormat -> IO ()
 runPrint fp mo fmt = withFile fp ReadMode \h -> do
   contents <- TIO.hGetContents h
   l <- handleNothing (parseMaybe ledger contents) $ setErrorColor >> die "Failed to parse source"
-  let writer = 
-        case fmt of 
-          HTML -> writeHtml5String
-          MD -> writeMarkdown
-          LaTex -> writeLaTeX
-  out <- runIOorExplode . writer (def{writerExtensions = Ext_grid_tables `enableExtension` emptyExtensions }) . doc . toPandocTable . toTable $ l
+  out <- runIOorExplode $ do
+    template <- case fmt of 
+      HTML -> compileDefaultTemplate "html"
+      MD -> compileDefaultTemplate "markdown"
+      LaTeX -> compileDefaultTemplate "latex"
+    let writer =
+          case fmt of
+            HTML ->
+              writeHtml5String
+                ( def
+                    { writerExtensions =
+                        Ext_grid_tables `enableExtension` emptyExtensions
+                    , writerTemplate = Just template
+                    }
+                )
+            MD ->
+              writeMarkdown
+                ( def
+                    { writerExtensions =
+                        Ext_grid_tables `enableExtension` emptyExtensions
+                    , writerTemplate = Just template
+                    }
+                )
+            LaTeX ->
+              writeLaTeX
+                ( def
+                    { writerExtensions =
+                        Ext_grid_tables `enableExtension` emptyExtensions
+                    , writerTemplate = Just template
+                    }
+                )
+    writer . doc . toPandocTable . toTable $ l
   case mo of
     Nothing -> TIO.hPutStr stdout out
     Just ofp -> TIO.writeFile ofp out
@@ -136,17 +166,21 @@ toPandocTable (Table{..}) = table caption colSpec tableHead tableBody tableFoot
   tableBody :: [TableBody]
   tableBody = singleton
     $ TableBody nullAttr (RowHeadColumns 0) []
-    $ V.toList $ flip V.imap rows 
+    $ V.toList
+    $ flip
+      V.imap
+      rows
       \i row ->
-        Row nullAttr $ 
-          (V.toList row <&> \case
-            Nothing -> emptyCell
-            Just (Positive n) -> simpleCell . plain . text $ "+" <> (T.pack $ show n)
-            Just (Negative n) -> simpleCell . plain . text $ "-" <> (T.pack $ show n)
-          ) ++
-          fromMaybe [] 
-            (do 
-              d <- descs 
-              t <- d V.!? i
-              singleton . simpleCell . plain . text <$> t
+        Row nullAttr
+          $ ( V.toList row <&> \case
+                Nothing -> emptyCell
+                Just (Positive n) -> simpleCell . plain . text $ "+" <> (T.pack $ show n)
+                Just (Negative n) -> simpleCell . plain . text $ "-" <> (T.pack $ show n)
+            )
+          ++ fromMaybe
+            []
+            ( do
+                d <- descs
+                t <- d V.!? i
+                singleton . simpleCell . plain . text <$> t
             )
