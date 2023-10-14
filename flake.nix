@@ -24,6 +24,8 @@
           hsPkgs = pkgs.haskell.packages.${compilerVersion}.override {
             overrides = hfinal: hprev: {
               numis = hfinal.callCabal2nix "numis" ./. {};
+              pandoc = pkgs.haskell.lib.dontCheck (hprev.callHackage "pandoc" "3.1.2" {});
+              pandoc-types = hprev.callHackage "pandoc-types" "1.23.1" {};
             };
           };
         });

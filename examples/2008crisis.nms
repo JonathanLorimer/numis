@@ -1,5 +1,4 @@
 Banks+Dealers has 100 as "MBS"
-Banks+Dealers owes 100 as "Lending"
-FederalReserve has 100 as "Lending"
+Banks+Dealers issues 100 to FederalReserve as "Lending"
 Banks+Dealers assigns 100 to FederalReserve as "MBS"
 FederalReserve sets-off 100 to Banks+Dealers as "Lending"

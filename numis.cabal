@@ -72,8 +72,9 @@ library cli
     , brick
     , numis
     , optparse-applicative
-    , pandoc
-    , pandoc-types
+    , pandoc >= 3.1.2
+    , pandoc-types >= 1.23.1
+    , pretty-simple
 
 executable numis
   import:         common-opts
