@@ -22,9 +22,9 @@
           compilerVersion = "ghc962";
           pkgs = nixpkgs.legacyPackages.${system};
           hsPkgs = pkgs.haskell.packages.${compilerVersion}.override {
-            overrides = hfinal: hprev: {
+            overrides = hfinal: hprev: with pkgs.haskell.lib; {
               numis = hfinal.callCabal2nix "numis" ./. {};
-              pandoc = pkgs.haskell.lib.dontCheck (hprev.callHackage "pandoc" "3.1.2" {});
+              pandoc = dontCheck (hprev.callHackage "pandoc" "3.1.2" {});
               pandoc-types = hprev.callHackage "pandoc-types" "1.23.1" {};
             };
           };
@@ -52,7 +52,13 @@
               pandoc
               texlive.combined.scheme-full
             ]
-            ++ (builtins.attrValues (import ./scripts.nix {s = pkgs.writeShellScriptBin;}));
+            ++ (builtins.attrValues (import ./scripts.nix {s = pkgs.writeShellScriptBin;}))
+            ++ # SDL dependencies
+            [ 
+              SDL2
+              glew
+              pkg-config
+            ];
         });
 
       # nix build
@@ -66,11 +72,15 @@
 
       # nix run
       apps = forAllSystems ({system, ...}: {
-        numis = { 
+        numis-cli = { 
           type = "app"; 
-          program = "${self.packages.${system}.numis}/bin/numis"; 
+          program = "${self.packages.${system}.numis}/bin/cli-exe"; 
         };
-        default = self.apps.${system}.numis;
+        numis-gui = { 
+          type = "app"; 
+          program = "${self.packages.${system}.numis}/bin/gui-exe"; 
+        };
+        default = self.apps.${system}.numis-cli;
       });
     };
 }

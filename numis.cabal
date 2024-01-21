@@ -77,11 +77,36 @@ library cli
     , pandoc-types >= 1.23.1
     , pretty-simple
 
-executable numis
+library gui
+  import:          common-opts
+
+  default-extensions:
+    Arrows
+    OverloadedLabels
+    OverloadedRecordDot
+
+  -- cabal-fmt: expand gui
+  exposed-modules:
+    Gui.Main
+
+  hs-source-dirs:  gui
+  build-depends:
+      numis
+    , haskell-gi-base
+    , gi-gtk
+
+executable cli-exe
   import:         common-opts
   main-is:        Main.hs
-  hs-source-dirs: app
+  hs-source-dirs: cli-exe
   build-depends:  numis:cli
+
+executable gui-exe
+  import: common-opts
+  main-is:        Main.hs
+  hs-source-dirs: gui-exe
+  build-depends: numis:gui
+
 
 test-suite numis-tests
   import:         common-opts
